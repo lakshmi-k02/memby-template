@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - Memby Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="memby-design-system.css">
+</head>
+<body>
+
+    <!-- Main Layout -->
+    <div class="admin-layout">
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="24" height="24" rx="6" fill="#3B82F6"/>
+                        <text x="50%" y="50%" text-anchor="middle" dy=".35em" fill="white" font-size="14" font-weight="600">M</text>
+                    </svg>
+                    <span class="sidebar-logo-text">memby.</span>
+                </div>
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar-nav">
+                <!-- Core Section -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Core</div>
+                    <a href="/home" class="nav-item">
+                        <span class="nav-item-icon">🏠</span>
+                        <span class="nav-item-text">Home</span>
+                    </a>
+                    <a href="/profile" class="nav-item">
+                        <span class="nav-item-icon">👤</span>
+                        <span class="nav-item-text">Profile</span>
+                    </a>
+                </div>
+
+                <!-- Content Management -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Content</div>
+                    <a href="/add-message" class="nav-item active">
+                        <span class="nav-item-icon">💬</span>
+                        <span class="nav-item-text">Messages</span>
+                    </a>
+                    <a href="/assets" class="nav-item">
+                        <span class="nav-item-icon">🎨</span>
+                        <span class="nav-item-text">Assets</span>
+                    </a>
+                    <a href="/my-exhibits" class="nav-item">
+                        <span class="nav-item-icon">🖼️</span>
+                        <span class="nav-item-text">My Exhibits</span>
+                    </a>
+                    <a href="/magic-studio" class="nav-item">
+                        <span class="nav-item-icon">✨</span>
+                        <span class="nav-item-text">Magic Studio</span>
+                    </a>
+                </div>
+
+                <!-- Configuration -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Configuration</div>
+                    <a href="/locations" class="nav-item">
+                        <span class="nav-item-icon">📍</span>
+                        <span class="nav-item-text">Locations</span>
+                    </a>
+                    <a href="/zones" class="nav-item">
+                        <span class="nav-item-icon">🗺️</span>
+                        <span class="nav-item-text">Zones</span>
+                    </a>
+                    <a href="/transitions" class="nav-item">
+                        <span class="nav-item-icon">🔄</span>
+                        <span class="nav-item-text">Transitions</span>
+                    </a>
+                    <a href="/traveling" class="nav-item">
+                        <span class="nav-item-icon">✈️</span>
+                        <span class="nav-item-text">Traveling</span>
+                    </a>
+                </div>
+
+                <!-- Communication -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Communication</div>
+                    <a href="/input-communication" class="nav-item">
+                        <span class="nav-item-icon">📥</span>
+                        <span class="nav-item-text">Input</span>
+                    </a>
+                    <a href="/connect" class="nav-item">
+                        <span class="nav-item-icon">🔗</span>
+                        <span class="nav-item-text">Connect</span>
+                    </a>
+                </div>
+
+                <!-- Administration -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Administration</div>
+                    <a href="/admin" class="nav-item">
+                        <span class="nav-item-icon">⚙️</span>
+                        <span class="nav-item-text">Admin</span>
+                    </a>
+                    <a href="/users" class="nav-item">
+                        <span class="nav-item-icon">👥</span>
+                        <span class="nav-item-text">Users</span>
+                    </a>
+                    <a href="/memby" class="nav-item">
+                        <span class="nav-item-icon">🎯</span>
+                        <span class="nav-item-text">Memby</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <h1 class="top-bar-title">Messages</h1>
+                </div>
+                <div class="top-bar-right">
+                    <button class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Add Message
+                    </button>
+                    <div class="user-menu">
+                        <div class="user-avatar">A</div>
+                        <span style="font-size: 14px; font-weight: 500; color: var(--color-text-primary);">admin12</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Container -->
+            <div class="content-container">
+
+                <!-- Messages Card -->
+                <div class="card">
+
+                    <!-- Filter Bar -->
+                    <div class="filter-bar">
+                        <span class="filter-label">Apply Filters:</span>
+                        <div class="filter-tabs">
+                            <button class="filter-tab">All</button>
+                            <button class="filter-tab">In Review</button>
+                            <button class="filter-tab active">Approved</button>
+                            <button class="filter-tab">Rejected</button>
+                        </div>
+                        <div class="filter-search">
+                            <input type="text" class="form-input" placeholder="Search...">
+                        </div>
+                        <input type="date" class="form-input" style="width: 160px;">
+                    </div>
+
+                    <!-- Table Container -->
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">
+                                        <input type="checkbox" style="cursor: pointer;">
+                                    </th>
+                                    <th style="width: 100px;">Status</th>
+                                    <th style="width: 80px;">Preview</th>
+                                    <th>Title</th>
+                                    <th>Artist</th>
+                                    <th>Phone</th>
+                                    <th>Date Submitted</th>
+                                    <th style="width: 140px; text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Row 1 -->
+                                <tr>
+                                    <td><input type="checkbox" style="cursor: pointer;"></td>
+                                    <td><span class="status-badge rejected">Rejected</span></td>
+                                    <td>
+                                        <img src="data:image/svg+xml,%3Csvg width='48' height='48' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23FF6B35;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23F7931E;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='48' height='48' fill='url(%23grad1)' rx='6'/%3E%3C/svg%3E" 
+                                             alt="Thumbnail" class="table-thumbnail">
+                                    </td>
+                                    <td style="font-weight: 500;">rayavarapu</td>
+                                    <td>rayavarapu</td>
+                                    <td>9179752272</td>
+                                    <td style="color: var(--color-text-secondary);">Aug 29, 2024 2:48 PM</td>
+                                    <td>
+                                        <div class="table-actions" style="justify-content: flex-end;">
+                                            <a href="#" class="action-link">Edit</a>
+                                            <a href="#" class="action-link danger">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 2 -->
+                                <tr>
+                                    <td><input type="checkbox" style="cursor: pointer;"></td>
+                                    <td><span class="status-badge approved">Approved</span></td>
+                                    <td>
+                                        <img src="data:image/svg+xml,%3Csvg width='48' height='48' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='48' height='48' fill='%238B4513' rx='6'/%3E%3C/svg%3E" 
+                                             alt="Thumbnail" class="table-thumbnail">
+                                    </td>
+                                    <td style="font-weight: 500;">Untitled</td>
+                                    <td style="color: var(--color-text-secondary);">Unknown Artist</td>
+                                    <td>9179752272</td>
+                                    <td style="color: var(--color-text-secondary);">Sep 4, 2024 2:35 PM</td>
+                                    <td>
+                                        <div class="table-actions" style="justify-content: flex-end;">
+                                            <a href="#" class="action-link">Edit</a>
+                                            <a href="#" class="action-link danger">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 3 -->
+                                <tr>
+                                    <td><input type="checkbox" style="cursor: pointer;"></td>
+                                    <td><span class="status-badge approved">Approved</span></td>
+                                    <td>
+                                        <img src="data:image/svg+xml,%3Csvg width='48' height='48' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='48' height='48' fill='%23696969' rx='6'/%3E%3C/svg%3E" 
+                                             alt="Thumbnail" class="table-thumbnail">
+                                    </td>
+                                    <td style="font-weight: 500;">Untitled</td>
+                                    <td style="color: var(--color-text-secondary);">Unknown Artist</td>
+                                    <td>9179752272</td>
+                                    <td style="color: var(--color-text-secondary);">Sep 13, 2024 9:04 AM</td>
+                                    <td>
+                                        <div class="table-actions" style="justify-content: flex-end;">
+                                            <a href="#" class="action-link">Edit</a>
+                                            <a href="#" class="action-link danger">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 4 -->
+                                <tr>
+                                    <td><input type="checkbox" style="cursor: pointer;"></td>
+                                    <td><span class="status-badge approved">Approved</span></td>
+                                    <td>
+                                        <img src="data:image/svg+xml,%3Csvg width='48' height='48' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='48' height='48' fill='%23E5E7EB' rx='6'/%3E%3C/svg%3E" 
+                                             alt="Thumbnail" class="table-thumbnail">
+                                    </td>
+                                    <td style="font-weight: 500;">Untitled</td>
+                                    <td style="color: var(--color-text-secondary);">Unknown Artist</td>
+                                    <td>9179752272</td>
+                                    <td style="color: var(--color-text-secondary);">Sep 13, 2024 9:05 AM</td>
+                                    <td>
+                                        <div class="table-actions" style="justify-content: flex-end;">
+                                            <a href="#" class="action-link">Edit</a>
+                                            <a href="#" class="action-link danger">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 5 -->
+                                <tr>
+                                    <td><input type="checkbox" style="cursor: pointer;"></td>
+                                    <td><span class="status-badge approved">Approved</span></td>
+                                    <td>
+                                        <img src="data:image/svg+xml,%3Csvg width='48' height='48' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='48' height='48' fill='%231E1E1E' rx='6'/%3E%3C/svg%3E" 
+                                             alt="Thumbnail" class="table-thumbnail">
+                                    </td>
+                                    <td style="font-weight: 500;">Untitled</td>
+                                    <td style="color: var(--color-text-secondary);">Unknown Artist</td>
+                                    <td>9179752272</td>
+                                    <td style="color: var(--color-text-secondary);">Sep 13, 2024 9:05 AM</td>
+                                    <td>
+                                        <div class="table-actions" style="justify-content: flex-end;">
+                                            <a href="#" class="action-link">Edit</a>
+                                            <a href="#" class="action-link danger">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            Showing <strong>5</strong> of <strong>45</strong> items
+                        </div>
+                        <ul class="pagination">
+                            <li class="pagination-item active">1</li>
+                            <li class="pagination-item">2</li>
+                            <li class="pagination-item">3</li>
+                            <li class="pagination-item">4</li>
+                            <li class="pagination-item">5</li>
+                            <li class="pagination-item">...</li>
+                            <li class="pagination-item">9</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- JavaScript for Sidebar Toggle -->
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        // Optional: Auto-collapse on smaller screens
+        function checkScreenSize() {
+            if (window.innerWidth < 1024) {
+                document.getElementById('sidebar').classList.add('collapsed');
+            } else {
+                document.getElementById('sidebar').classList.remove('collapsed');
+            }
+        }
+
+        window.addEventListener('resize', checkScreenSize);
+        checkScreenSize();
+    </script>
+
+</body>
+</html>

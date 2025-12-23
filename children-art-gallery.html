@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Children's Art Gallery - Memby Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="memby-design-system.css">
+    <link rel="stylesheet" href="gallery-styles.css">
+
+    <style>
+        :root {
+            --border: #e5e7eb;
+            --text: #111827;
+            --muted: #6b7280;
+            --approve: #16a34a;
+            --reject: #dc2626;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, sans-serif;
+            background: #f9fafb;
+            color: var(--text);
+        }
+
+        /* ===== Cards ===== */
+        .container {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+        }
+
+        .card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 14px;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .card-meta {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        /* ===== Overlay ===== */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .45);
+            opacity: 0;
+            pointer-events: none;
+            transition: .3s;
+            z-index: 90;
+        }
+
+        /* ===== Drawer ===== */
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 420px;
+            max-width: 100%;
+            height: 100vh;
+            background: white;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, .15);
+            transform: translateX(100%);
+            transition: .35s ease;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.drawer-open .overlay {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        body.drawer-open .drawer {
+            transform: translateX(0);
+        }
+
+        .drawer-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .drawer-close {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .drawer-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .drawer-content img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+
+        .section {
+            margin-bottom: 18px;
+        }
+
+        .section h3 {
+            margin: 0 0 4px;
+        }
+
+        .kv div {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .kv span {
+            color: var(--muted);
+        }
+
+        /* ===== Actions ===== */
+        .drawer-actions {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            color: white;
+        }
+
+        .approve {
+            background: var(--approve);
+        }
+
+        .reject {
+            background: var(--reject);
+        }
+
+        /* Bulk selection checkbox (top-right of each card) */
+        .card,
+        .art-card {
+            position: relative;
+        }
+
+        .card-select-wrapper {
+            position: absolute;
+            top: 10px;
+            left: 10px;   /* ← move to left */
+            right: auto;  /* ← remove right */
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        .card-select {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+
+        /* Bulk actions toolbar */
+        #bulkActions {
+            position: fixed;
+            left: 50%;
+            /* transform: translateX(-50%); */
+            bottom: 22px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .12);
+            padding: 10px 14px;
+            display: none;
+            gap: 10px;
+            z-index: 250;
+            align-items: center;
+        }
+
+        #bulkActions .count {
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        
+            /* Approval badge (added for cards lacking one) */
+            .approval-badge {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                background: #f59e0b;
+                color: white;
+                padding: 6px 8px;
+                border-radius: 8px;
+                font-weight: 700;
+                font-size: 12px;
+                z-index: 30;
+            }
+
+        #bulkActions .btn {
+            padding: 8px 12px;
+            min-width: 88px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Main Layout -->
+    <div class="admin-layout">
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="memby-logo.png" alt="Memby logo" width="48" height="38" style="
+                background:#ffffff;
+                border-radius:4px;
+                padding:2px;
+            " />
+
+                    <!-- <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="24" height="24" rx="6" fill="#3B82F6"/>
+                        <text x="50%" y="50%" text-anchor="middle" dy=".35em" fill="white" font-size="14" font-weight="600">M</text>
+                    </svg> -->
+                    <span class="sidebar-logo-text">memby.</span>
+                </div>
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Core</div>
+                    <a href="/home" class="nav-item">
+                        <span class="nav-item-icon">🏠</span>
+                        <span class="nav-item-text">Home</span>
+                    </a>
+                    <a href="/connect" class="nav-item">
+                        <span class="nav-item-icon">🔗</span>
+                        <span class="nav-item-text">Connect</span>
+                    </a>
+                    <a href="/admin" class="nav-item">
+                        <span class="nav-item-icon">⚙️</span>
+                        <span class="nav-item-text">Admin</span>
+                    </a>
+                    <a href="/voice" class="nav-item">
+                        <span class="nav-item-icon">🎤</span>
+                        <span class="nav-item-text">Voice</span>
+                    </a>
+                    <a href="/users" class="nav-item">
+                        <span class="nav-item-icon">👥</span>
+                        <span class="nav-item-text">Users</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Content</div>
+                    <!-- <a href="/messages" class="nav-item">
+                        <span class="nav-item-icon">💬</span>
+                        <span class="nav-item-text">Messages</span>
+                        <span style="background: #DC2626; color: white; border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 600; margin-left: auto;">3</span>
+                    </a> -->
+                    <a href="/exhibits" class="nav-item active">
+                        <span class="nav-item-icon">🎨</span>
+                        <span class="nav-item-text">Exhibits</span>
+                    </a>
+                    <a href="/mapping" class="nav-item">
+                        <span class="nav-item-icon">🗺️</span>
+                        <span class="nav-item-text">Mapping</span>
+                    </a>
+                    <a href="/prescription" class="nav-item">
+                        <span class="nav-item-icon">📋</span>
+                        <span class="nav-item-text">Prescription</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <h1 class="top-bar-title">Children's Art Gallery</h1>
+                </div>
+                <div class="top-bar-right">
+                    <button class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Add User/Content
+                    </button>
+                    <!-- Notification -->
+                    <div class="notification-wrapper">
+                        <button class="notification-btn" onclick="toggleNotifications()">
+                            🔔
+                            <span class="notification-badge">3</span>
+                        </button>
+
+                        <!-- Dropdown -->
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notification-header">
+                                Notifications
+                            </div>
+
+                            <div class="notification-item unread">
+                                <strong>New artwork submitted</strong>
+                                <span>rayavarapu • 2 min ago</span>
+                            </div>
+
+                            <div class="notification-item unread">
+                                <strong>Message pending approval</strong>
+                                <span>admin12 • 10 min ago</span>
+                            </div>
+
+                            <div class="notification-item">
+                                <strong>Artwork approved</strong>
+                                <span>yesterday</span>
+                            </div>
+
+                            <div class="notification-footer">
+                                View all
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-avatar">A</div>
+                        <span style="font-size: 14px; font-weight: 500; color: var(--color-text-primary);">admin</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Container -->
+            <div class="content-container">
+
+                <!-- Gallery Header -->
+                <div class="gallery-header">
+                    <p class="gallery-description">
+                        Explore artwork and content submitted by children. Click on names or phone numbers to view
+                        profiles.
+                    </p>
+                </div>
+
+                <div
+                    style="background-color: var(--color-surface); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg); border: 1px solid var(--color-border);">
+                    <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                        <button class="filter-tab" onclick="filterGallery('all', this)">
+                            All
+                            <span
+                                style="background: rgba(59,130,246,0.2); color: var(--color-accent); border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 600; margin-left: 8px;">12</span>
+                        </button>
+                        <button class="filter-tab" onclick="filterGallery('pending', this)">
+                            Pending
+                            <span
+                                style="background: rgba(245,158,11,0.15); color: var(--color-warning); border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 600; margin-left: 8px;">3</span>
+                        </button>
+                        <button class="filter-tab" onclick="filterGallery('approved', this)">
+                            Approved
+                            <span
+                                style="background: rgba(22,163,74,0.15); color: var(--color-success); border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 600; margin-left: 8px;">8</span>
+                        </button>
+                        <button class="filter-tab active" onclick="filterGallery('rejected', this)">
+                            Rejected
+                            <span
+                                style="background: rgba(220,38,38,0.15); color: var(--color-error); border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 600; margin-left: 8px;">1</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Gallery Controls -->
+                <div class="gallery-controls">
+                    <div class="search-box">
+                        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" class="form-input"
+                            placeholder="Search by title, artist name, or phone number...">
+                    </div>
+                    <select class="form-select filter-dropdown">
+                        <option>All</option>
+                        <option>Approved</option>
+                        <option>Pending</option>
+                        <option>Rejected</option>
+                    </select>
+                </div>
+
+                <!-- Gallery Grid -->
+                <div class="gallery-grid">
+
+                    <!-- Art Card 1 -->
+                    <div class="art-card">
+                        <!-- <div class="art-card-image">
+                            <img src="data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%231E1E1E'/%3E%3Ccircle cx='200' cy='200' r='120' fill='none' stroke='white' stroke-width='8'/%3E%3Ctext x='200' y='160' text-anchor='middle' fill='white' font-size='32' font-weight='bold' font-family='Arial'%3EHOUSE%3C/text%3E%3Ctext x='200' y='195' text-anchor='middle' fill='white' font-size='20' font-family='Arial'%3Eof%3C/text%3E%3Ctext x='200' y='230' text-anchor='middle' fill='white' font-size='32' font-weight='bold' font-family='Arial'%3ESHINE%3C/text%3E%3Cline x1='140' y1='120' x2='155' y2='105' stroke='white' stroke-width='3'/%3E%3Cline x1='170' y1='110' x2='180' y2='95' stroke='white' stroke-width='3'/%3E%3Cline x1='200' y1='105' x2='200' y2='85' stroke='white' stroke-width='3'/%3E%3Cline x1='230' y1='110' x2='240' y2='95' stroke='white' stroke-width='3'/%3E%3Cline x1='260' y1='120' x2='275' y2='105' stroke='white' stroke-width='3'/%3E%3Cline x1='140' y1='280' x2='155' y2='295' stroke='white' stroke-width='3'/%3E%3Cline x1='170' y1='290' x2='180' y2='305' stroke='white' stroke-width='3'/%3E%3Cline x1='200' y1='295' x2='200' y2='315' stroke='white' stroke-width='3'/%3E%3Cline x1='230' y1='290' x2='240' y2='305' stroke='white' stroke-width='3'/%3E%3Cline x1='260' y1='280' x2='275' y2='295' stroke='white' stroke-width='3'/%3E%3C/svg%3E" 
+                                 alt="Delphi and friends">
+                            <div class="art-card-badges">
+                                <span class="asset-type-badge">Assets</span>
+                                <span class="approval-badge">Pending</span>
+                            </div>
+                            <div class="art-card-actions">
+                                <button class="btn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="1"></circle>
+                                        <circle cx="12" cy="5" r="1"></circle>
+                                        <circle cx="12" cy="19" r="1"></circle>
+                                    </svg>
+                                    Explore Files
+                                </button>
+                                <button class="btn secondary">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    No file chosen
+                                </button>
+                            </div>
+                        </div> -->
+                        <!-- Cards -->
+                        <div class="container">
+                            <div class="card" onclick="openDrawer({
+                                    image:'https://picsum.photos/600/400',
+                                    title:'rayavarapu',
+                                    artist:'rayavarapu',
+                                    email:'sarah-eva@floracracy.com',
+                                    museum:'admin12',
+                                    date:'29-08-2024',
+                                    country:'India / USA'
+                                })">
+                                <img src="https://picsum.photos/600/400" />
+                                <div class="card-body">
+                                    <div class="card-title">rayavarapu</div>
+                                    <div class="card-meta">Pending approval</div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="art-card-content">
+                            <h3 class="art-card-title">Delphi and friends</h3>
+                            <div class="art-card-meta">
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    <div class="artist-info">
+                                        <a href="#" class="artist-name">Alice</a>
+                                        <span class="artist-age">(5 years old)</span>
+                                    </div>
+                                </div>
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path
+                                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                        </path>
+                                    </svg>
+                                    <a href="#">7737325431</a>
+                                </div>
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    1/4/2025 9:31:58 PM
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Art Card 2 -->
+                    <div class="art-card">
+                        <div class="art-card-image">
+                            <img src="data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%231E1E1E'/%3E%3Ccircle cx='200' cy='200' r='120' fill='none' stroke='white' stroke-width='8'/%3E%3Ctext x='200' y='160' text-anchor='middle' fill='white' font-size='32' font-weight='bold' font-family='Arial'%3EHOUSE%3C/text%3E%3Ctext x='200' y='195' text-anchor='middle' fill='white' font-size='20' font-family='Arial'%3Eof%3C/text%3E%3Ctext x='200' y='230' text-anchor='middle' fill='white' font-size='32' font-weight='bold' font-family='Arial'%3ESHINE%3C/text%3E%3Cline x1='140' y1='120' x2='155' y2='105' stroke='white' stroke-width='3'/%3E%3Cline x1='170' y1='110' x2='180' y2='95' stroke='white' stroke-width='3'/%3E%3Cline x1='200' y1='105' x2='200' y2='85' stroke='white' stroke-width='3'/%3E%3Cline x1='230' y1='110' x2='240' y2='95' stroke='white' stroke-width='3'/%3E%3Cline x1='260' y1='120' x2='275' y2='105' stroke='white' stroke-width='3'/%3E%3Cline x1='140' y1='280' x2='155' y2='295' stroke='white' stroke-width='3'/%3E%3Cline x1='170' y1='290' x2='180' y2='305' stroke='white' stroke-width='3'/%3E%3Cline x1='200' y1='295' x2='200' y2='315' stroke='white' stroke-width='3'/%3E%3Cline x1='230' y1='290' x2='240' y2='305' stroke='white' stroke-width='3'/%3E%3Cline x1='260' y1='280' x2='275' y2='295' stroke='white' stroke-width='3'/%3E%3C/svg%3E"
+                                alt="Beth">
+                            <div class="art-card-badges">
+                                
+                                <span class="approval-badge">Pending</span>
+                            </div>
+                            <div class="art-card-actions">
+                                <button class="btn">Explore Files</button>
+                                <button class="btn secondary">No file chosen</button>
+                            </div>
+                        </div>
+                        <div class="art-card-content">
+                            <h3 class="art-card-title">Beth</h3>
+                            <div class="art-card-meta">
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    <div class="artist-info">
+                                        <a href="#" class="artist-name">George</a>
+                                        <span class="artist-age">(5 years old)</span>
+                                    </div>
+                                </div>
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path
+                                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                        </path>
+                                    </svg>
+                                    <a href="#">7737325431</a>
+                                </div>
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    1/4/2025 9:32:57 PM
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Art Card 3 -->
+                    <div class="art-card">
+                        <div class="art-card-image">
+                            <img src="data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%231E1E1E'/%3E%3Ccircle cx='200' cy='200' r='120' fill='none' stroke='white' stroke-width='8'/%3E%3Ctext x='200' y='160' text-anchor='middle' fill='white' font-size='32' font-weight='bold' font-family='Arial'%3EHOUSE%3C/text%3E%3Ctext x='200' y='195' text-anchor='middle' fill='white' font-size='20' font-family='Arial'%3Eof%3C/text%3E%3Ctext x='200' y='230' text-anchor='middle' fill='white' font-size='32' font-weight='bold' font-family='Arial'%3ESHINE%3C/text%3E%3Cline x1='140' y1='120' x2='155' y2='105' stroke='white' stroke-width='3'/%3E%3Cline x1='170' y1='110' x2='180' y2='95' stroke='white' stroke-width='3'/%3E%3Cline x1='200' y1='105' x2='200' y2='85' stroke='white' stroke-width='3'/%3E%3Cline x1='230' y1='110' x2='240' y2='95' stroke='white' stroke-width='3'/%3E%3Cline x1='260' y1='120' x2='275' y2='105' stroke='white' stroke-width='3'/%3E%3Cline x1='140' y1='280' x2='155' y2='295' stroke='white' stroke-width='3'/%3E%3Cline x1='170' y1='290' x2='180' y2='305' stroke='white' stroke-width='3'/%3E%3Cline x1='200' y1='295' x2='200' y2='315' stroke='white' stroke-width='3'/%3E%3Cline x1='230' y1='290' x2='240' y2='305' stroke='white' stroke-width='3'/%3E%3Cline x1='260' y1='280' x2='275' y2='295' stroke='white' stroke-width='3'/%3E%3C/svg%3E"
+                                alt="Mike">
+                            <div class="art-card-badges">
+                                <!-- <span class="asset-type-badge">Assets</span> -->
+                                <span class="approval-badge">Pending</span>
+                            </div>
+                            <div class="art-card-actions">
+                                <button class="btn">Explore Files</button>
+                                <button class="btn secondary">No file chosen</button>
+                            </div>
+                        </div>
+                        <div class="art-card-content">
+                            <h3 class="art-card-title">Mike</h3>
+                            <div class="art-card-meta">
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    <div class="artist-info">
+                                        <a href="#" class="artist-name">Mike</a>
+                                        <span class="artist-age">(7 years old)</span>
+                                    </div>
+                                </div>
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path
+                                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                        </path>
+                                    </svg>
+                                    <a href="#">7737325431</a>
+                                </div>
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    1/4/2025 9:33:41 PM
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Art Card 4 -->
+                    <div class="art-card">
+                        <div class="art-card-image">
+                            <img src="data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%231E1E1E'/%3E%3Ccircle cx='200' cy='200' r='120' fill='none' stroke='white' stroke-width='8'/%3E%3Ctext x='200' y='160' text-anchor='middle' fill='white' font-size='32' font-weight='bold' font-family='Arial'%3EHOUSE%3C/text%3E%3Ctext x='200' y='195' text-anchor='middle' fill='white' font-size='20' font-family='Arial'%3Eof%3C/text%3E%3Ctext x='200' y='230' text-anchor='middle' fill='white' font-size='32' font-weight='bold' font-family='Arial'%3ESHINE%3C/text%3E%3Cline x1='140' y1='120' x2='155' y2='105' stroke='white' stroke-width='3'/%3E%3Cline x1='170' y1='110' x2='180' y2='95' stroke='white' stroke-width='3'/%3E%3Cline x1='200' y1='105' x2='200' y2='85' stroke='white' stroke-width='3'/%3E%3Cline x1='230' y1='110' x2='240' y2='95' stroke='white' stroke-width='3'/%3E%3Cline x1='260' y1='120' x2='275' y2='105' stroke='white' stroke-width='3'/%3E%3Cline x1='140' y1='280' x2='155' y2='295' stroke='white' stroke-width='3'/%3E%3Cline x1='170' y1='290' x2='180' y2='305' stroke='white' stroke-width='3'/%3E%3Cline x1='200' y1='295' x2='200' y2='315' stroke='white' stroke-width='3'/%3E%3Cline x1='230' y1='290' x2='240' y2='305' stroke='white' stroke-width='3'/%3E%3Cline x1='260' y1='280' x2='275' y2='295' stroke='white' stroke-width='3'/%3E%3C/svg%3E"
+                                alt="my story">
+                            <div class="art-card-badges">
+                                <!-- <span class="asset-type-badge">Assets</span> -->
+                                <span class="approval-badge">Pending</span>
+                            </div>
+                            <div class="art-card-actions">
+                                <button class="btn">Explore Files</button>
+                                <button class="btn secondary">No file chosen</button>
+                            </div>
+                        </div>
+                        <div class="art-card-content">
+                            <h3 class="art-card-title">my story</h3>
+                            <div class="art-card-meta">
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    <div class="artist-info">
+                                        <a href="#" class="artist-name">Rachel</a>
+                                        <span class="artist-age">(7 years old)</span>
+                                    </div>
+                                </div>
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path
+                                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                        </path>
+                                    </svg>
+                                    <a href="#">7737325431</a>
+                                </div>
+                                <div class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    1/4/2025 9:34:37 PM
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+    <!-- Overlay -->
+    <aside class="drawer">
+        <div class="drawer-header">
+            <h2>Review Message</h2>
+            <button class="drawer-close" onclick="closeDrawer()">✕</button>
+        </div>
+
+        <div class="drawer-content">
+            <img id="dImage" />
+
+            <div class="section">
+                <h3 id="dTitle"></h3>
+                <div class="card-meta">By <span id="dArtist"></span></div>
+            </div>
+
+            <div class="section kv">
+                <div><span>Email</span><strong id="dEmail"></strong></div>
+                <div><span>Museum</span><strong id="dMuseum"></strong></div>
+                <div><span>Date</span><strong id="dDate"></strong></div>
+                <div><span>Country</span><strong id="dCountry"></strong></div>
+            </div>
+        </div>
+
+        <div class="drawer-actions">
+            <button class="btn reject" onclick="reject()">Reject</button>
+            <button class="btn approve" onclick="approve()">Approve</button>
+        </div>
+    </aside>
+
+    <!-- Bulk actions toolbar (shows when one or more cards selected) -->
+    <div id="bulkActions" aria-hidden="true">
+        <div class="count">0 selected</div>
+        <button id="bulkReject" class="btn reject">Reject</button>
+        <button id="bulkApprove" class="btn approve">Approve</button>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        function checkScreenSize() {
+            if (window.innerWidth < 1024) {
+                document.getElementById('sidebar').classList.add('collapsed');
+            } else {
+                document.getElementById('sidebar').classList.remove('collapsed');
+            }
+        }
+
+        window.addEventListener('resize', checkScreenSize);
+        checkScreenSize();
+
+        function openDrawer(data) {
+            document.body.classList.add('drawer-open');
+
+            dImage.src = data.image;
+            dTitle.innerText = data.title;
+            dArtist.innerText = data.artist;
+            dEmail.innerText = data.email;
+            dMuseum.innerText = data.museum;
+            dDate.innerText = data.date;
+            dCountry.innerText = data.country;
+        }
+
+        function closeDrawer() {
+            document.body.classList.remove('drawer-open');
+        }
+
+        function approve() {
+            alert('Approved ✅');
+            closeDrawer();
+        }
+
+        function reject() {
+            alert('Rejected ❌');
+            closeDrawer();
+        }
+
+        function toggleNotifications() {
+            document
+                .getElementById('notificationDropdown')
+                .classList.toggle('open');
+        }
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            const wrapper = document.querySelector('.notification-wrapper');
+            if (!wrapper.contains(e.target)) {
+                document
+                    .getElementById('notificationDropdown')
+                    .classList.remove('open');
+            }
+        });
+
+        // Bulk selection: inject a single checkbox per visible card and manage bulk actions
+        document.addEventListener('DOMContentLoaded', () => {
+            // Build a list of target elements to attach a single checkbox to.
+            const targets = new Set();
+
+            // For each .art-card, prefer a nested .card if present, otherwise the .art-card itself
+            document.querySelectorAll('.art-card').forEach((art) => {
+                const inner = art.querySelector('.card');
+                targets.add(inner || art);
+            });
+
+            // Also include top-level standalone .card elements that are not inside an .art-card
+            document.querySelectorAll('.card').forEach((c) => {
+                if (!c.closest('.art-card')) targets.add(c);
+            });
+
+            const targetArray = Array.from(targets);
+
+            targetArray.forEach((card, i) => {
+                if (!card || card.querySelector('.card-select')) return;
+
+                const wrap = document.createElement('div');
+                wrap.className = 'card-select-wrapper';
+
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.className = 'card-select';
+                input.dataset.index = String(i);
+
+                // Prevent card click when interacting with the checkbox
+                input.addEventListener('click', (ev) => ev.stopPropagation());
+                input.addEventListener('change', updateBulkUI);
+
+                wrap.appendChild(input);
+                card.insertBefore(wrap, card.firstChild);
+
+                // If this visual card doesn't already show an approval badge, and it contains
+                // 'Pending' text inside, add a small badge so the state is visible.
+                const hasBadge = card.querySelector('.approval-badge');
+                const bodyText = card.innerText || '';
+                if (!hasBadge && /pending/i.test(bodyText)) {
+                    const badge = document.createElement('span');
+                    badge.className = 'approval-badge';
+                    badge.textContent = 'Pending';
+                    card.appendChild(badge);
+                }
+            });
+
+            const bulkActions = document.getElementById('bulkActions');
+            const bulkCount = bulkActions.querySelector('.count');
+            const bulkApprove = document.getElementById('bulkApprove');
+            const bulkReject = document.getElementById('bulkReject');
+
+            function updateBulkUI() {
+                const checked = document.querySelectorAll('.card-select:checked');
+                const n = checked.length;
+                if (n > 0) {
+                    bulkCount.textContent = n + ' selected';
+                    bulkActions.style.display = 'flex';
+                    bulkActions.setAttribute('aria-hidden', 'false');
+                } else {
+                    bulkActions.style.display = 'none';
+                    bulkActions.setAttribute('aria-hidden', 'true');
+                }
+            }
+
+            bulkApprove.addEventListener('click', () => {
+                const checked = Array.from(document.querySelectorAll('.card-select:checked'));
+                if (checked.length === 0) return;
+                alert('Approved ' + checked.length + ' item(s)');
+                checked.forEach(cb => cb.checked = false);
+                updateBulkUI();
+            });
+
+            bulkReject.addEventListener('click', () => {
+                const checked = Array.from(document.querySelectorAll('.card-select:checked'));
+                if (checked.length === 0) return;
+                alert('Rejected ' + checked.length + ' item(s)');
+                checked.forEach(cb => cb.checked = false);
+                updateBulkUI();
+            });
+        });
+    </script>
+
+</body>
+
+</html>
