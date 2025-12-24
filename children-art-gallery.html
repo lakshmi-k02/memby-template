@@ -16,241 +16,236 @@
     <link rel="stylesheet" href="gallery-styles.css">
 
     <style>
-        :root {
-            --border: #e5e7eb;
-            --text: #111827;
-            --muted: #6b7280;
-            --approve: #16a34a;
-            --reject: #dc2626;
+        /* Desktop: Show filter buttons, hide dropdown */
+        .filter-container {
+            display: block;
         }
 
-        body {
-            margin: 0;
-            font-family: Inter, system-ui, sans-serif;
-            background: #f9fafb;
-            color: var(--text);
+        .filter-dropdown-wrapper {
+            display: none;
         }
 
-        /* ===== Cards ===== */
-        .container {
-            padding: 24px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
+        /* Desktop filter buttons - keep pill style */
+        .filter-buttons-wrapper {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
         }
 
-        .card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
+        .filter-tab {
+            white-space: nowrap;
+        }
+
+        /* Desktop: Gallery controls layout */
+        .gallery-controls {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        /* Mobile Hamburger Menu */
+        .mobile-menu-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--color-text-primary);
             cursor: pointer;
-            transition: 0.2s;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            transition: background-color var(--transition-base);
         }
 
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+        .mobile-menu-toggle:hover {
+            background-color: var(--color-bg);
         }
 
-        .card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
+        .mobile-menu-toggle svg {
+            width: 24px;
+            height: 24px;
         }
 
-        .card-body {
-            padding: 14px;
-        }
-
-        .card-title {
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .card-meta {
-            font-size: 14px;
-            color: var(--muted);
-        }
-
-        /* ===== Overlay ===== */
-        .overlay {
+        /* Mobile Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, .45);
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
             opacity: 0;
-            pointer-events: none;
-            transition: .3s;
-            z-index: 90;
+            transition: opacity var(--transition-base);
         }
 
-        /* ===== Drawer ===== */
-        .drawer {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 420px;
-            max-width: 100%;
-            height: 100vh;
-            background: white;
-            box-shadow: -10px 0 30px rgba(0, 0, 0, .15);
-            transform: translateX(100%);
-            transition: .35s ease;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-        }
-
-        body.drawer-open .overlay {
+        .sidebar-overlay.active {
             opacity: 1;
-            pointer-events: auto;
         }
 
-        body.drawer-open .drawer {
-            transform: translateX(0);
-        }
-
-        .drawer-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .drawer-header h2 {
-            margin: 0;
-            font-size: 18px;
-        }
-
-        .drawer-close {
-            background: none;
-            border: none;
-            font-size: 22px;
-            cursor: pointer;
-        }
-
-        .drawer-content {
-            padding: 20px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .drawer-content img {
-            width: 100%;
-            border-radius: 10px;
-            margin-bottom: 16px;
-        }
-
-        .section {
-            margin-bottom: 18px;
-        }
-
-        .section h3 {
-            margin: 0 0 4px;
-        }
-
-        .kv div {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            margin-bottom: 6px;
-        }
-
-        .kv span {
-            color: var(--muted);
-        }
-
-        /* ===== Actions ===== */
-        .drawer-actions {
-            padding: 16px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 12px;
-            font-weight: 600;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
+        /* Floating Action Button */
+        .fab {
+            display: none;
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--color-accent);
             color: white;
-        }
-
-        .approve {
-            background: var(--approve);
-        }
-
-        .reject {
-            background: var(--reject);
-        }
-
-        /* Bulk selection checkbox (top-right of each card) */
-        .card,
-        .art-card {
-            position: relative;
-        }
-
-        .card-select-wrapper {
-            position: absolute;
-            top: 10px;
-            left: 10px;   /* ← move to left */
-            right: auto;  /* ← remove right */
-            z-index: 20;
-            display: flex;
+            border: none;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            cursor: pointer;
+            z-index: 200;
             align-items: center;
             justify-content: center;
+            transition: all var(--transition-base);
         }
 
-
-        .card-select {
-            width: 18px;
-            height: 18px;
-            accent-color: #2563eb;
-            cursor: pointer;
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
         }
 
-        /* Bulk actions toolbar */
-        #bulkActions {
-            position: fixed;
-            left: 50%;
-            /* transform: translateX(-50%); */
-            bottom: 22px;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, .12);
-            padding: 10px 14px;
-            display: none;
-            gap: 10px;
-            z-index: 250;
-            align-items: center;
+        .fab svg {
+            width: 24px;
+            height: 24px;
         }
 
-        #bulkActions .count {
-            font-weight: 600;
-            margin-right: 8px;
-        }
-        
-            /* Approval badge (added for cards lacking one) */
-            .approval-badge {
-                position: absolute;
-                top: 5px;
-                right: 5px;
-                background: #f59e0b;
-                color: white;
-                padding: 6px 8px;
-                border-radius: 8px;
-                font-weight: 700;
-                font-size: 12px;
-                z-index: 30;
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: flex;
             }
 
-        #bulkActions .btn {
-            padding: 8px 12px;
-            min-width: 88px;
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 280px;
+                max-width: 85vw;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay {
+                display: block;
+            }
+
+            .sidebar .sidebar-toggle {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+
+            .top-bar {
+                padding: var(--spacing-md);
+            }
+
+            .top-bar-title {
+                font-size: 18px;
+            }
+
+            .top-bar-right .btn-primary {
+                display: none;
+            }
+
+            .fab {
+                display: flex;
+            }
+
+            .user-menu span {
+                display: none;
+            }
+
+            /* Hide filter buttons on mobile, show dropdown */
+            .filter-container {
+                display: none;
+            }
+
+            .gallery-controls {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+
+            .search-box {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .search-box .form-input {
+                width: 100%;
+                text-align: left;
+            }
+
+            /* Mobile dropdown with label */
+            .filter-dropdown-wrapper {
+                width: 100%;
+                display: block;
+            }
+
+            .filter-dropdown-label {
+                display: block;
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--color-text-primary);
+                margin-bottom: var(--spacing-sm);
+            }
+
+            .filter-dropdown {
+                width: 100%;
+                padding: 12px 14px;
+                font-size: 14px;
+            }
+
+            .content-container {
+                padding: var(--spacing-md);
+            }
+
+            .gallery-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+
+            .notification-dropdown {
+                right: -10px;
+                width: calc(100vw - 40px);
+                max-width: 320px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .top-bar-title {
+                font-size: 16px;
+            }
+
+            .fab {
+                bottom: 20px;
+                right: 20px;
+                width: 52px;
+                height: 52px;
+            }
+
+            .filter-tab {
+                font-size: 13px;
+                padding: 10px 14px;
+                min-height: 44px;
+            }
+
+            #bulkActions {
+                bottom: 80px;
+                padding: 10px 12px;
+            }
+
+            #bulkActions .count {
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -338,9 +333,19 @@
         <!-- Main Content Area -->
         <main class="main-content">
 
+            <!-- Sidebar Overlay for Mobile -->
+            <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
             <!-- Top Bar -->
             <header class="top-bar">
                 <div class="top-bar-left">
+                    <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" aria-label="Toggle menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
                     <h1 class="top-bar-title">Children's Art Gallery</h1>
                 </div>
                 <div class="top-bar-right">
@@ -403,9 +408,9 @@
                     </p>
                 </div>
 
-                <div
+                <div class="filter-container"
                     style="background-color: var(--color-surface); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg); border: 1px solid var(--color-border);">
-                    <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                    <div class="filter-buttons-wrapper">
                         <button class="filter-tab" onclick="filterGallery('all', this)">
                             All
                             <span
@@ -439,12 +444,16 @@
                         <input type="text" class="form-input"
                             placeholder="Search by title, artist name, or phone number...">
                     </div>
-                    <select class="form-select filter-dropdown">
-                        <option>All</option>
-                        <option>Approved</option>
-                        <option>Pending</option>
-                        <option>Rejected</option>
-                    </select>
+                    <!-- Mobile Filter Dropdown -->
+                    <div class="filter-dropdown-wrapper">
+                        <label class="filter-dropdown-label">Filter by Status</label>
+                        <select class="form-select filter-dropdown" id="mobileFilterDropdown">
+                            <option value="all">All (12)</option>
+                            <option value="pending">Pending (3)</option>
+                            <option value="approved">Approved (8)</option>
+                            <option value="rejected">Rejected (1)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Gallery Grid -->
@@ -727,6 +736,14 @@
         </div>
     </aside>
 
+    <!-- Floating Action Button (Mobile) -->
+    <button class="fab" onclick="handleFabClick()" aria-label="Add User/Content">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    </button>
+
     <!-- Bulk actions toolbar (shows when one or more cards selected) -->
     <div id="bulkActions" aria-hidden="true">
         <div class="count">0 selected</div>
@@ -740,16 +757,102 @@
             document.getElementById('sidebar').classList.toggle('collapsed');
         }
 
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+        }
+
+        function closeMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function handleFabClick() {
+            // Trigger the same action as the "Add User/Content" button
+            alert('Add User/Content functionality');
+            // You can replace this with your actual add user/content logic
+        }
+
         function checkScreenSize() {
-            if (window.innerWidth < 1024) {
-                document.getElementById('sidebar').classList.add('collapsed');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (window.innerWidth <= 768) {
+                // Mobile: sidebar should be hidden by default
+                sidebar.classList.remove('collapsed');
+                if (!sidebar.classList.contains('mobile-open')) {
+                    sidebar.classList.remove('mobile-open');
+                    overlay.classList.remove('active');
+                }
             } else {
-                document.getElementById('sidebar').classList.remove('collapsed');
+                // Desktop: use collapsed state
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.add('collapsed');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                }
             }
         }
 
         window.addEventListener('resize', checkScreenSize);
         checkScreenSize();
+
+        // Close mobile sidebar when clicking on a nav item
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    closeMobileSidebar();
+                }
+            });
+        });
+
+        // Sync mobile dropdown with filter buttons
+        const mobileFilterDropdown = document.getElementById('mobileFilterDropdown');
+        if (mobileFilterDropdown) {
+            mobileFilterDropdown.addEventListener('change', function() {
+                const value = this.value;
+                // Find and click the corresponding filter button
+                const filterButtons = document.querySelectorAll('.filter-tab');
+                filterButtons.forEach(btn => {
+                    if (btn.textContent.toLowerCase().includes(value)) {
+                        filterGallery(value, btn);
+                    }
+                });
+            });
+        }
+
+        // Sync filter buttons with mobile dropdown
+        function filterGallery(filter, element) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.filter-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            if (element) {
+                element.classList.add('active');
+            }
+
+            // Update mobile dropdown if it exists
+            if (mobileFilterDropdown) {
+                mobileFilterDropdown.value = filter;
+            }
+
+            // Filter logic would go here
+            console.log('Filtering by:', filter);
+        }
 
         function openDrawer(data) {
             document.body.classList.add('drawer-open');
